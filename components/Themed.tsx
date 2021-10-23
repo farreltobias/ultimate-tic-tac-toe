@@ -13,7 +13,7 @@ export function useThemeColor(
   props: { light?: string; dark?: string },
   colorName: keyof typeof Colors.light & keyof typeof Colors.dark
 ) {
-  const theme = useColorScheme();
+  const theme = 'dark';
   const colorFromProps = props[theme];
 
   if (colorFromProps) {
@@ -38,9 +38,18 @@ export function Text(props: TextProps) {
   return <DefaultText style={[{ color }, style]} {...otherProps} />;
 }
 
-export function View(props: ViewProps) {
+export const View = React.forwardRef<DefaultView, ViewProps>((props, ref) => {
   const { style, lightColor, darkColor, ...otherProps } = props;
-  const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'background');
+  const backgroundColor = useThemeColor(
+    { light: lightColor, dark: darkColor },
+    'background'
+  );
 
-  return <DefaultView style={[{ backgroundColor }, style]} {...otherProps} />;
-}
+  return (
+    <DefaultView
+      ref={ref}
+      style={[{ backgroundColor }, style]}
+      {...otherProps}
+    />
+  );
+});
