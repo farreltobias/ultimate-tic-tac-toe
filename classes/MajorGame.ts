@@ -1,4 +1,4 @@
-import Game from './Game';
+import Game, { Position } from './Game';
 
 interface PositionCoordinates {
   x: number;
@@ -8,11 +8,13 @@ interface PositionCoordinates {
 class MajorGame extends Game {
   private minorGames: Game[][];
   private activeMinorGame: PositionCoordinates;
+  private minorTurns: number;
 
   constructor() {
     super();
 
     this.minorGames = [];
+    this.minorTurns = 0;
     this.activeMinorGame = {} as PositionCoordinates;
 
     for (let x = 0; x < 3; x++) {
@@ -22,26 +24,43 @@ class MajorGame extends Game {
     }
   }
 
+  private playOnMinorGame(x: number, y: number, minorY: number, minorX: number, letter?: Position) {    
+    const currentGame = this.minorGames[minorX][minorY];
+    
+    currentGame.markPosition(x, y, letter);
+    
+    if (currentGame.winner) {
+      this.markPosition(x, y);
+    }
+  }
+
   public play(x: number, y: number, game?: PositionCoordinates) {
+    const letterToPlay = this.minorTurns % 2 ? 'X' : 'O';
     const { x: minorX, y: minorY } = this.activeMinorGame;
+
+    if (!minorX && !minorY) {
+      if (!game)
+        return;
+
+      this.activeMinorGame = game;
+
+      this.playOnMinorGame(x, y, game.y, game.x, letterToPlay);
+
+      return;
+    }
 
     const currentGame = this.minorGames[minorX][minorY];
 
-    if (!game && (!minorX && !minorY))
-      return;
+    if (game && currentGame.winner) {
+      this.activeMinorGame = game;
 
-    if (game) {
-      if (currentGame.winner) {
-        this.activeMinorGame = game;
-      }
+      this.playOnMinorGame(x, y, minorY, minorX, letterToPlay);
+
+      return;
     }
 
     if (!currentGame.winner) {
-      this.minorGames[minorX][minorY].markPosition(x, y);
-
-      if (currentGame.winner) {
-        this.markPosition(minorX, minorY);
-      }
+      this.playOnMinorGame(x, y, minorY, minorX);
     }
   }
 }

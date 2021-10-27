@@ -41,7 +41,7 @@ const winningConditions = [
   ]
 ];
 
-type Position = 'O' | 'X' | 'D';
+export type Position = 'O' | 'X' | 'D';
 
 class Game {
   winner?: Position;
