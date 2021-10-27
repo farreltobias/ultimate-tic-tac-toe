@@ -95,7 +95,7 @@ class Game {
       
       condition.forEach(position => {
         const [x, y] = position;
-        if (this.checkPosition(x, y, letter))
+        if (!this.checkPosition(x, y, letter))
           isConditionValid = false;
       });
 
