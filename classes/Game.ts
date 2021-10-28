@@ -1,83 +1,27 @@
-const winningConditions = [
-  [
-    [0, 0],
-    [0, 1],
-    [0, 2]
-  ],
-  [
-    [1, 0],
-    [1, 1],
-    [1, 2]
-  ],
-  [
-    [2, 0],
-    [2, 1],
-    [2, 2]
-  ],
-  [
-    [0, 0],
-    [1, 0],
-    [2, 0]
-  ],
-  [
-    [0, 1],
-    [1, 1],
-    [2, 1]
-  ],
-  [
-    [0, 2],
-    [1, 2],
-    [2, 2]
-  ],
-  [
-    [0, 0],
-    [1, 1],
-    [2, 2]
-  ],
-  [
-    [0, 2],
-    [1, 1],
-    [3, 1]
-  ]
-];
-
-export type Position = 'O' | 'X' | 'D';
+import {
+  coordinates,
+  IWinner,
+  Outcome,
+  Player,
+  winningConditions,
+} from '../types';
 
 class Game {
-  winner?: Position;
-  private firstTurn?: Position;
-  private positions: Position[][];
-  private turns: number;
+  private plays: number;
+  private winner: IWinner;
+  private positions: Outcome[][];
 
   constructor() {
-    this.turns = 0;
-    this.positions = [];
-
-    for (let x = 0; x < 3; x++) {
-      this.positions[x] = [];
-      for (let y = 0; y < 3; y++) {
-        this.positions[x][y] = '' as Position;
-      }
-    }
+    this.plays = 0;
+    this.winner = { winner: undefined, index: -1 };
+    this.positions = Array.from({ length: 3 }, () =>
+      Array.from({ length: 3 }, () => '' as Outcome)
+    );
   }
 
-  public markPosition(x: number, y: number, letter?: Position): void {
-    if (letter) {
-      this.positions[x][y] = letter;
-      this.turns++;
-
-      this.firstTurn = this.firstTurn ? this.firstTurn : letter;
-
-      this.defineWinner();
-
-      return;
-    }
-
-    if (this.positions[x][y])
-      return;
-
-    this.positions[x][y] = this.turns % 2 ? this.firstTurn === 'X' ? 'O' : 'X' : 'X';
-    this.turns++;
+  public markPosition({ x, y }: coordinates, outcome: Outcome): void {
+    this.positions[x][y] = outcome;
+    this.plays++;
 
     this.defineWinner();
   }
@@ -86,42 +30,42 @@ class Game {
     return this.positions[x][y] === letter;
   }
 
-  private isLetterAWinner(letter: string) {
-    let isWinner = false;
-    let winningCondition = -1;
+  private checkIfWinner = (letter: Player) =>
+    winningConditions.reduce(
+      (acc, condition, index) => {
+        const isWinner = condition.every(([x, y]) =>
+          this.checkPosition(x, y, letter)
+        );
 
-    winningConditions.forEach((condition, index) => {
-      let isConditionValid = true;
-      
-      condition.forEach(position => {
-        const [x, y] = position;
-        if (!this.checkPosition(x, y, letter))
-          isConditionValid = false;
-      });
+        if (isWinner) return { isWinner, index };
 
-      if (isConditionValid) {
-        isWinner = true;
-        winningCondition = index;
-      }
-    });
+        return acc;
+      },
+      { isWinner: false, index: -1 }
+    );
 
-    return {isWinner, winningCondition};
-  }
+  public getWinner = () => this.winner;
 
-  public getWinner() {
-    return this.winner;
-  }
+  public getPlays = () => this.plays;
+  protected addPlays = () => {
+    this.plays++;
+  };
+
+  public getPositions = () => this.positions;
 
   public defineWinner() {
-    let winner: 'O' | 'X' | '' = '';
+    const isDraw = this.plays === 9;
 
-    for (let i = 0; i < 2; i++) {
-      const letter = i ? 'O' : 'X';
+    const { winner, index } = ['O', 'X'].reduce(
+      (acc, letter) => {
+        const { isWinner, index } = this.checkIfWinner(letter as Player);
+        if (isWinner) return { winner: letter as Outcome, index };
+        return acc;
+      },
+      { winner: undefined as Outcome | undefined, index: -1 }
+    );
 
-      this.isLetterAWinner(letter) && (winner = letter);
-    }
-
-    this.winner = winner ? winner : this.turns === 9 ? 'D' : undefined;
+    this.winner = { winner: winner ? winner : isDraw ? 'D' : undefined, index };
   }
 }
 
