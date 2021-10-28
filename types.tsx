@@ -9,6 +9,7 @@ import {
   NavigatorScreenParams,
 } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import Major from './classes/Major';
 
 declare global {
   namespace ReactNavigation {
@@ -18,7 +19,6 @@ declare global {
 
 export type RootStackParamList = {
   Root: NavigatorScreenParams<RootTabParamList> | undefined;
-  Modal: undefined;
   NotFound: undefined;
   TabOne: undefined;
 };
@@ -37,33 +37,80 @@ export type RootTabScreenProps<Screen extends keyof RootTabParamList> =
     NativeStackScreenProps<RootStackParamList>
   >;
 
-export type status = '' | 'X' | 'O' | 'D';
-export type player = 'X' | 'O' | '';
+export type Player = 'O' | 'X';
 
-export interface IMinor {
-  positions: player[][];
-  status: status;
-}
-
-export interface IMajor {
-  positions: status[][];
-  status: '' | 'X' | 'O';
-  minors: IMinor[];
-}
-
-export interface IRound {
-  position: number[];
-  player: player;
-}
-
+export type Outcome = 'O' | 'X' | 'D';
 export interface IMajorProps {
-  major: IMajor;
+  major: Major;
   index: number;
-  round: IRound;
+  setMajor: React.Dispatch<
+    React.SetStateAction<{
+      major: Major;
+    }>
+  >;
 }
 export interface IMinorProps {
   item: string;
   index: number;
   showDots: boolean;
-  status: status;
+  winner?: Outcome;
+  major: Major;
+  reference: number;
+  setMajor: React.Dispatch<
+    React.SetStateAction<{
+      major: Major;
+    }>
+  >;
 }
+export interface IWinner {
+  winner?: Outcome;
+  index: number;
+}
+
+export interface coordinates {
+  x: number;
+  y: number;
+}
+
+export const winningConditions = [
+  [
+    [0, 0],
+    [0, 1],
+    [0, 2],
+  ],
+  [
+    [1, 0],
+    [1, 1],
+    [1, 2],
+  ],
+  [
+    [2, 0],
+    [2, 1],
+    [2, 2],
+  ],
+  [
+    [0, 0],
+    [1, 0],
+    [2, 0],
+  ],
+  [
+    [0, 1],
+    [1, 1],
+    [2, 1],
+  ],
+  [
+    [0, 2],
+    [1, 2],
+    [2, 2],
+  ],
+  [
+    [0, 0],
+    [1, 1],
+    [2, 2],
+  ],
+  [
+    [0, 2],
+    [1, 1],
+    [2, 0],
+  ],
+];
